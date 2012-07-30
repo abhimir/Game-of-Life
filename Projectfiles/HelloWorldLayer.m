@@ -26,7 +26,7 @@ bool go=false;
 // add logic to avoid unecessary board checks: when a cell comes to life
 // or dies, keep list of neighbors to be checked
 
-const int BOARD_SIZE= 10;
+const int BOARD_SIZE= 25;
 
 
 -(id) init
@@ -180,9 +180,12 @@ const int BOARD_SIZE= 10;
 
 -(void) changeValueOfArray:(NSMutableArray *)array atI:(int) i j:(int) j to: (int) newValue
 {
-    NSMutableArray* row=[array objectAtIndex:i];
-    [row replaceObjectAtIndex:j withObject:[NSNumber numberWithInt:newValue]];
-    [array replaceObjectAtIndex:i withObject:row];
+    if (i<BOARD_SIZE&&i>=0&&j<BOARD_SIZE&&j>=0)
+    { 
+        NSMutableArray* row=[array objectAtIndex:i];
+        [row replaceObjectAtIndex:j withObject:[NSNumber numberWithInt:newValue]];
+        [array replaceObjectAtIndex:i withObject:row];
+    }
 }
 
 -(void) changeGo
@@ -236,10 +239,11 @@ const int BOARD_SIZE= 10;
     
     CGFloat minDimension=MIN(xDimension, yDimension);
     
-    CGFloat leftX= xIdx * minDimension/BOARD_SIZE;
-    CGFloat rightX= (xIdx+1) * minDimension/BOARD_SIZE;
-    CGFloat bottomY= yIdx * minDimension/BOARD_SIZE;
-    CGFloat topY= (yIdx+1) * minDimension/BOARD_SIZE;
+    //For as yet unknown reason, board drawing was half-sized on actual device
+    CGFloat leftX= 2*xIdx * minDimension/BOARD_SIZE;
+    CGFloat rightX= 2*(xIdx+1) * minDimension/BOARD_SIZE;
+    CGFloat bottomY= 2*yIdx * minDimension/BOARD_SIZE;
+    CGFloat topY= 2*(yIdx+1) * minDimension/BOARD_SIZE;
     
     //now let's draw a filled-in polygon! Here are the 4 vertices
     CGPoint bottomLeft = ccp(leftX,bottomY);
@@ -315,16 +319,18 @@ const int BOARD_SIZE= 10;
     {
         int xIdx=location.x/(minDimension/BOARD_SIZE);
         int yIdx=location.y/(minDimension/BOARD_SIZE);
-        
-        int newValue=0;
-        if ([[[gameBoard objectAtIndex:xIdx] 
-              objectAtIndex:yIdx]
-             integerValue] ==0)
+        if (xIdx<BOARD_SIZE&&xIdx>=0&&yIdx<BOARD_SIZE&&yIdx>=0)
         {
-            newValue=1;
+            int newValue=0;
+            if ([[[gameBoard objectAtIndex:xIdx] 
+                  objectAtIndex:yIdx]
+                 integerValue] ==0)
+            {
+                newValue=1;
+            }
+            [self changeValueOfArray:gameBoard atI:xIdx j:yIdx to:newValue];
+            [self updateNeighbors];
         }
-        [self changeValueOfArray:gameBoard atI:xIdx j:yIdx to:newValue];
-        [self updateNeighbors];
     }
 }
 
