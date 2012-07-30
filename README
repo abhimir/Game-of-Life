@@ -4,3 +4,5 @@ Written for iOS using Kobold2D.
 
 
 Next step, reducing the amount of logic done each evolution.
+
+Code of interest is in HelloWorldLayer
