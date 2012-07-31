@@ -28,7 +28,7 @@ bool go=false;
 
 const int BOARD_SIZE= 25;
 
-
+#pragma mark Initialize
 -(id) init
 {
 	if ((self = [super init]))
@@ -94,7 +94,32 @@ const int BOARD_SIZE= 25;
     }
     return myArray;
 }
+#pragma mark-
 
+#pragma mark Utilities
+-(void) changeValueOfArray:(NSMutableArray *)array atI:(int) i j:(int) j to: (int) newValue
+{
+    if (i<BOARD_SIZE&&i>=0&&j<BOARD_SIZE&&j>=0)
+    { 
+        NSMutableArray* row=[array objectAtIndex:i];
+        [row replaceObjectAtIndex:j withObject:[NSNumber numberWithInt:newValue]];
+        [array replaceObjectAtIndex:i withObject:row];
+    }
+}
+
+-(void) changeGo
+{
+    go=!go;
+}
+
+-(void) clearBoard
+{
+    gameBoard=[self initialize2DArray];
+    neighbors=[self initialize2DArray];
+}
+#pragma mark-
+
+#pragma mark GameLogic
 -(void) updateNeighbors
 {
     for (int i=0; i<BOARD_SIZE; i++)
@@ -175,89 +200,10 @@ const int BOARD_SIZE= 25;
             [self changeValueOfArray:neighbors atI:i j:j to:count];
         }
     }
-
-}
-
--(void) changeValueOfArray:(NSMutableArray *)array atI:(int) i j:(int) j to: (int) newValue
-{
-    if (i<BOARD_SIZE&&i>=0&&j<BOARD_SIZE&&j>=0)
-    { 
-        NSMutableArray* row=[array objectAtIndex:i];
-        [row replaceObjectAtIndex:j withObject:[NSNumber numberWithInt:newValue]];
-        [array replaceObjectAtIndex:i withObject:row];
-    }
-}
-
--(void) changeGo
-{
-    go=!go;
-}
-
--(void) clearBoard
-{
-    gameBoard=[self initialize2DArray];
-    neighbors=[self initialize2DArray];
-}
-
--(void) ccFillPoly: (CGPoint*) poli: (int) points: (BOOL) closePolygon
-{
-    
-    // Default GL states: GL_TEXTURE_2D, GL_VERTEX_ARRAY, GL_COLOR_ARRAY, GL_TEXTURE_COORD_ARRAY
-    
-    // Needed states: GL_VERTEX_ARRAY,
-    
-    // Unneeded states: GL_TEXTURE_2D, GL_TEXTURE_COORD_ARRAY, GL_COLOR_ARRAY
-    
-    glDisable(GL_TEXTURE_2D);
-    glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-    glDisableClientState(GL_COLOR_ARRAY);
-    glVertexPointer(2, GL_FLOAT, 0, poli);
-    if( closePolygon )
-        glDrawArrays(GL_TRIANGLE_FAN, 0, points);
-    else
-        glDrawArrays(GL_LINE_STRIP, 0, points);
-    
-    // restore default state
-    glEnableClientState(GL_COLOR_ARRAY);
-    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-    glEnable(GL_TEXTURE_2D);
-}
-
--(void)drawSquareAtXindex: (int)xIdx yIndex:(int)yIdx
-{
-    CCDirector* director = [CCDirector sharedDirector];
-    //enable an opengl setting to smooth the line once it is drawn
-    glEnable(GL_LINE_SMOOTH);
-    
-    //set the color in RGB to draw the line with
-    glColor4ub(255,255,255,255);
-    
-    //convert indices to points
-    CGSize windowSize=[director winSize];
-    CGFloat xDimension=windowSize.width;
-    CGFloat yDimension=windowSize.height;
-    
-    CGFloat minDimension=MIN(xDimension, yDimension);
-    
-    //For as yet unknown reason, board drawing was half-sized on actual device
-    CGFloat leftX= 2*xIdx * minDimension/BOARD_SIZE;
-    CGFloat rightX= 2*(xIdx+1) * minDimension/BOARD_SIZE;
-    CGFloat bottomY= 2*yIdx * minDimension/BOARD_SIZE;
-    CGFloat topY= 2*(yIdx+1) * minDimension/BOARD_SIZE;
-    
-    //now let's draw a filled-in polygon! Here are the 4 vertices
-    CGPoint bottomLeft = ccp(leftX,bottomY);
-    CGPoint bottomRight = ccp(rightX,bottomY);
-    CGPoint topLeft = ccp(leftX,topY);
-    CGPoint topRight = ccp(rightX,topY);
-    
-    //now we put these vertices in an array
-    CGPoint vertices[] = {bottomLeft, bottomRight, topRight, topLeft};
-    
-    //and now we draw a filled-in polygon with those vertices
-    [self ccFillPoly:vertices: 4: TRUE];
     
 }
+
+
 
 -(void) evolve
 {
@@ -297,7 +243,8 @@ const int BOARD_SIZE= 25;
     [self updateNeighbors];
     }
 }
-
+#pragma mark-
+#pragma mark InputHandling
 -(void) checkTouch
 {
     
@@ -333,7 +280,9 @@ const int BOARD_SIZE= 25;
         }
     }
 }
+#pragma mark-
 
+#pragma mark Drawing
 -(void) draw
 {
     for (int i=0; i<BOARD_SIZE; i++)
@@ -346,4 +295,66 @@ const int BOARD_SIZE= 25;
         }
     }
 }
+
+-(void)drawSquareAtXindex: (int)xIdx yIndex:(int)yIdx
+{
+    CCDirector* director = [CCDirector sharedDirector];
+    //enable an opengl setting to smooth the line once it is drawn
+    glEnable(GL_LINE_SMOOTH);
+    
+    //set the color in RGB to draw the line with
+    glColor4ub(255,255,255,255);
+    
+    //convert indices to points
+    CGSize windowSize=[director winSize];
+    CGFloat xDimension=windowSize.width;
+    CGFloat yDimension=windowSize.height;
+    
+    CGFloat minDimension=MIN(xDimension, yDimension);
+    
+    //For as yet unknown reason, board drawing was half-sized on actual device
+    CGFloat leftX= 2*xIdx * minDimension/BOARD_SIZE;
+    CGFloat rightX= 2*(xIdx+1) * minDimension/BOARD_SIZE;
+    CGFloat bottomY= 2*yIdx * minDimension/BOARD_SIZE;
+    CGFloat topY= 2*(yIdx+1) * minDimension/BOARD_SIZE;
+    
+    //now let's draw a filled-in polygon! Here are the 4 vertices
+    CGPoint bottomLeft = ccp(leftX,bottomY);
+    CGPoint bottomRight = ccp(rightX,bottomY);
+    CGPoint topLeft = ccp(leftX,topY);
+    CGPoint topRight = ccp(rightX,topY);
+    
+    //now we put these vertices in an array
+    CGPoint vertices[] = {bottomLeft, bottomRight, topRight, topLeft};
+    
+    //and now we draw a filled-in polygon with those vertices
+    [self ccFillPoly:vertices: 4: TRUE];
+    
+}
+
+-(void) ccFillPoly: (CGPoint*) poli: (int) points: (BOOL) closePolygon
+{
+    
+    // Default GL states: GL_TEXTURE_2D, GL_VERTEX_ARRAY, GL_COLOR_ARRAY, GL_TEXTURE_COORD_ARRAY
+    
+    // Needed states: GL_VERTEX_ARRAY,
+    
+    // Unneeded states: GL_TEXTURE_2D, GL_TEXTURE_COORD_ARRAY, GL_COLOR_ARRAY
+    
+    glDisable(GL_TEXTURE_2D);
+    glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+    glDisableClientState(GL_COLOR_ARRAY);
+    glVertexPointer(2, GL_FLOAT, 0, poli);
+    if( closePolygon )
+        glDrawArrays(GL_TRIANGLE_FAN, 0, points);
+    else
+        glDrawArrays(GL_LINE_STRIP, 0, points);
+    
+    // restore default state
+    glEnableClientState(GL_COLOR_ARRAY);
+    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+    glEnable(GL_TEXTURE_2D);
+}
+
+
 @end
